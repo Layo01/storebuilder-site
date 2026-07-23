@@ -30,8 +30,8 @@ export default function Produtos() {
   const [promoPrice, setPromoPrice] = useState("");
   const [trackStock, setTrackStock] = useState(false);
   const [stockQuantity, setStockQuantity] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -78,8 +78,8 @@ export default function Produtos() {
     setPromoPrice("");
     setTrackStock(false);
     setStockQuantity("");
-    setImageFile(null);
-    setExistingImageUrl(null);
+    setNewImageFiles([]);
+    setExistingImages([]);
     setError("");
   }
 
@@ -92,9 +92,19 @@ export default function Produtos() {
     setPromoPrice(p.promo_price ? String(p.promo_price) : "");
     setTrackStock(p.track_stock);
     setStockQuantity(p.stock_quantity != null ? String(p.stock_quantity) : "");
-    setExistingImageUrl(p.images?.[0] || null);
-    setImageFile(null);
+    setExistingImages(p.images || []);
+    setNewImageFiles([]);
     setShowForm(true);
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    const totalSlots = 5 - existingImages.length;
+    setNewImageFiles(files.slice(0, totalSlots));
+  }
+
+  function removeExistingImage(url: string) {
+    setExistingImages((prev) => prev.filter((i) => i !== url));
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -109,14 +119,14 @@ export default function Produtos() {
 
     setSaving(true);
 
-    let imageUrl = existingImageUrl;
+    const uploadedUrls: string[] = [];
 
-    if (imageFile) {
-      const fileExt = imageFile.name.split(".").pop();
-      const filePath = `${storeId}/${Date.now()}.${fileExt}`;
+    for (const file of newImageFiles) {
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${storeId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from("product-images")
-        .upload(filePath, imageFile);
+        .upload(filePath, file);
 
       if (uploadError) {
         setError("Erro ao enviar imagem: " + uploadError.message);
@@ -127,8 +137,10 @@ export default function Produtos() {
       const { data: publicUrlData } = supabase.storage
         .from("product-images")
         .getPublicUrl(filePath);
-      imageUrl = publicUrlData.publicUrl;
+      uploadedUrls.push(publicUrlData.publicUrl);
     }
+
+    const finalImages = [...existingImages, ...uploadedUrls].slice(0, 5);
 
     const payload = {
       store_id: storeId,
@@ -139,7 +151,7 @@ export default function Produtos() {
       promo_price: promoPrice.trim() ? parseFloat(promoPrice) : null,
       track_stock: trackStock,
       stock_quantity: trackStock && stockQuantity.trim() ? parseInt(stockQuantity, 10) : null,
-      images: imageUrl ? [imageUrl] : [],
+      images: finalImages,
       is_available: true,
     };
 
@@ -181,6 +193,8 @@ export default function Produtos() {
 
   if (loading) return <div className="emptyState">A carregar...</div>;
 
+  const totalImages = existingImages.length + newImageFiles.length;
+
   return (
     <div className="container" style={{ paddingTop: 30 }}>
       <a href="/painel" style={{ color: "var(--text-muted)", fontSize: 13 }}>← Voltar ao painel</a>
@@ -216,11 +230,33 @@ export default function Produtos() {
             <input placeholder="Quantidade em stock" type="number" value={stockQuantity} onChange={(e) => setStockQuantity(e.target.value)} style={inputStyle} />
           )}
 
-          <label style={{ fontSize: 13, color: "var(--text-muted)" }}>Foto do produto</label>
-          {existingImageUrl && !imageFile && (
-            <img src={existingImageUrl} style={{ width: 80, height: 80, borderRadius: 8, objectFit: "cover" }} />
+          <label style={{ fontSize: 13, color: "var(--text-muted)" }}>
+            Fotos do produto ({totalImages}/5)
+          </label>
+
+          {existingImages.length > 0 && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {existingImages.map((url) => (
+                <div key={url} style={{ position: "relative" }}>
+                  <img src={url} style={{ width: 64, height: 64, borderRadius: 8, objectFit: "cover" }} />
+                  <button
+                    type="button"
+                    onClick={() => removeExistingImage(url)}
+                    style={{ position: "absolute", top: -6, right: -6, background: "var(--primary)", color: "#fff", border: "none", borderRadius: "50%", width: 20, height: 20, fontSize: 12, cursor: "pointer" }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
-          <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+
+          {totalImages < 5 && (
+            <input type="file" accept="image/*" multiple onChange={handleFileSelect} />
+          )}
+          <p style={{ fontSize: 11, color: "var(--text-muted)", margin: 0 }}>
+            Pode adicionar até 5 fotos. A primeira será a foto principal.
+          </p>
 
           {error && <p style={{ color: "var(--primary)", fontSize: 13 }}>{error}</p>}
 
@@ -251,7 +287,9 @@ export default function Produtos() {
           />
           <div style={{ flex: 1 }}>
             <p style={{ fontWeight: 700, margin: 0 }}>{p.name}</p>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "2px 0" }}>{p.price.toFixed(2)} MT</p>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "2px 0" }}>
+              {p.price.toFixed(2)} MT · {p.images?.length || 0} foto(s)
+            </p>
             {p.track_stock && (
               <p style={{ fontSize: 12, color: (p.stock_quantity || 0) <= 3 ? "var(--primary)" : "var(--text-muted)", margin: 0 }}>
                 Stock: {p.stock_quantity ?? 0}
