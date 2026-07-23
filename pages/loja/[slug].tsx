@@ -137,6 +137,19 @@ export default function StorePage({ store, products }: { store: Store | null; pr
     window.open(`https://wa.me/${store.whatsapp_number}?text=${message}`, "_blank");
   }
 
+  function buyNowOnWhatsApp(product: Product) {
+    if (!store) return;
+    if (!store.whatsapp_number) {
+      alert("Esta loja ainda não configurou um número de WhatsApp para receber pedidos.");
+      return;
+    }
+    const price = isOnPromo(product) ? product.promo_price! : product.price;
+    const message = encodeURIComponent(
+      `Olá! Tenho interesse neste produto da loja *${store.name}*:\n\n${product.name} — ${price.toFixed(2)} MT`
+    );
+    window.open(`https://wa.me/${store.whatsapp_number}?text=${message}`, "_blank");
+  }
+
   if (!store) {
     return <div className="emptyState">Loja não encontrada.</div>;
   }
@@ -197,14 +210,18 @@ export default function StorePage({ store, products }: { store: Store | null; pr
           {visibleProducts.map((p) => {
             const onPromo = isOnPromo(p);
             return (
-              <a className="card" key={p.id} href={`/loja/${store.subdomain}/produto/${p.id}`}>
-                <img
-                  className="cardImage"
-                  src={p.images?.[0] || "https://placehold.co/300x300/f0f0f2/999?text=Foto"}
-                  alt={p.name}
-                />
+              <div className="card" key={p.id}>
+                <a href={`/loja/${store.subdomain}/produto/${p.id}`}>
+                  <img
+                    className="cardImage"
+                    src={p.images?.[0] || "https://placehold.co/300x300/f0f0f2/999?text=Foto"}
+                    alt={p.name}
+                  />
+                </a>
                 <div className="cardBody">
-                  <p className="cardName">{p.name}</p>
+                  <a href={`/loja/${store.subdomain}/produto/${p.id}`}>
+                    <p className="cardName">{p.name}</p>
+                  </a>
                   <div className="priceRow">
                     {onPromo ? (
                       <>
@@ -216,17 +233,18 @@ export default function StorePage({ store, products }: { store: Store | null; pr
                     )}
                   </div>
                   {onPromo && <span className="badge">PROMOÇÃO</span>}
-                  <button
-                    className="addToCartButton"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      addToCart(p);
-                    }}
-                  >
+                  <button className="addToCartButton" onClick={() => addToCart(p)}>
                     Adicionar
                   </button>
+                  <button
+                    className="addToCartButton"
+                    style={{ background: "transparent", border: "1px solid var(--primary)", color: "var(--primary)", marginTop: 6 }}
+                    onClick={() => buyNowOnWhatsApp(p)}
+                  >
+                    Comprar
+                  </button>
                 </div>
-              </a>
+              </div>
             );
           })}
         </div>
