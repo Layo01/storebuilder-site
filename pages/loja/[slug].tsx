@@ -168,16 +168,16 @@ export default function StorePage({ store, products }: { store: Store | null; pr
 
         {(store.instagram || store.facebook) && (
           <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 8, fontSize: 13 }}>
-            {store.instagram && <span style={{ color: "var(--text-muted)" }}>📷 {store.instagram}</span>}
-            {store.facebook && <span style={{ color: "var(--text-muted)" }}>👍 {store.facebook}</span>}
+            {store.instagram && <span style={{ color: "var(--text-muted)" }}>Instagram: {store.instagram}</span>}
+            {store.facebook && <span style={{ color: "var(--text-muted)" }}>Facebook: {store.facebook}</span>}
           </div>
         )}
 
         {(store.business_hours || store.delivery_info || store.payment_methods) && (
           <div style={{ marginTop: 14, fontSize: 12, color: "var(--text-muted)", textAlign: "left", background: "var(--surface)", borderRadius: 10, padding: 12 }}>
-            {store.business_hours && <p style={{ margin: "2px 0" }}>🕐 {store.business_hours}</p>}
-            {store.delivery_info && <p style={{ margin: "2px 0" }}>🚚 {store.delivery_info}</p>}
-            {store.payment_methods && <p style={{ margin: "2px 0" }}>💳 {store.payment_methods}</p>}
+            {store.business_hours && <p style={{ margin: "2px 0" }}>Horário: {store.business_hours}</p>}
+            {store.delivery_info && <p style={{ margin: "2px 0" }}>Entrega: {store.delivery_info}</p>}
+            {store.payment_methods && <p style={{ margin: "2px 0" }}>Pagamento: {store.payment_methods}</p>}
           </div>
         )}
       </div>
@@ -306,9 +306,25 @@ const qtyBtnStyle: React.CSSProperties = {
   background: "var(--surface-alt)", color: "var(--text)", cursor: "pointer",
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { slug } = context.params as { slug: string };
+export const getServerSideProps: GetServerSideProps<{ store: Store | null; products: Product[] }> = async (context) => {
+  const slug = context.params?.slug as string;
 
   const { data: store } = await supabase
     .from("stores")
-    .select("id, name, business_description, subdomain, whatsapp_number, logo_url, instagram, facebook, business_hours, delivery_info, payment_method
+    .select("id, name, business_description, subdomain, whatsapp_number, logo_url, instagram, facebook, business_hours, delivery_info, payment_methods")
+    .eq("subdomain", slug)
+    .maybeSingle();
+
+  if (!store) {
+    return { props: { store: null, products: [] } };
+  }
+
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, name, description, category, images, price, promo_price, promo_starts_at, promo_ends_at, is_available")
+    .eq("store_id", store.id)
+    .eq("is_available", true)
+    .order("updated_at", { ascending: false });
+
+  return { props: { store, products: products || [] } };
+};
