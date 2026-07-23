@@ -77,78 +77,66 @@ export default function CriarLoja() {
 
   if (successSlug) {
     return (
-      <div className="container" style={{ paddingTop: 60, textAlign: "center" }}>
-        <h1 className="storeName">Loja criada!</h1>
-        <p className="storeAbout">A sua loja já está disponível em:</p>
-        <p style={{ marginTop: 12 }}>
-          <a href={`/loja/${successSlug}`} style={{ color: "var(--primary)", fontWeight: 700 }}>
+      <div className="authPage">
+        <div className="authCard" style={{ textAlign: "center" }}>
+          <span className="authBadge">Tudo pronto</span>
+          <h1 className="authTitle">A sua loja está no ar!</h1>
+          <p className="authSubtitle">Já pode partilhar o link e começar a vender.</p>
+          <div style={{ background: "var(--surface-alt)", borderRadius: 10, padding: 12, marginBottom: 20, fontSize: 13, wordBreak: "break-all" }}>
             /loja/{successSlug}
+          </div>
+          <a href="/painel" className="primaryButton" style={{ display: "block", textAlign: "center" }}>
+            Ir para o meu painel
           </a>
-        </p>
-        <p className="storeAbout" style={{ marginTop: 24 }}>
-          <a href="/painel" style={{ color: "var(--primary)" }}>Ir para o meu painel</a>
-        </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container" style={{ paddingTop: 40 }}>
-      <h1 className="storeName" style={{ textAlign: "center" }}>Criar a minha loja</h1>
-      <p className="storeAbout" style={{ textAlign: "center", marginBottom: 24 }}>
-        Preencha os dados abaixo para criar a sua loja online gratuitamente.
-      </p>
+    <div className="authPage">
+      <div className="authCard">
+        <span className="authBadge">Comece grátis</span>
+        <h1 className="authTitle">Criar a minha loja</h1>
+        <p className="authSubtitle">Leva menos de 2 minutos. Preencha os dados abaixo.</p>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <input
-          placeholder="Nome da loja"
-          value={storeName}
-          onChange={(e) => setStoreName(e.target.value)}
-          style={inputStyle}
-        />
-        <textarea
-          placeholder="Descreva o seu negócio"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          style={{ ...inputStyle, minHeight: 80 }}
-        />
-        <input
-          placeholder="Número de WhatsApp (ex: 258866452412)"
-          value={whatsapp}
-          onChange={(e) => setWhatsapp(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          placeholder="O seu e-mail"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          placeholder="Crie uma senha"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={inputStyle}
-        />
+        <form onSubmit={handleSubmit}>
+          <div className="fieldGroup">
+            <label className="fieldLabel">Nome da loja</label>
+            <input className="fieldInput" value={storeName} onChange={(e) => setStoreName(e.target.value)} placeholder="Ex: Loja da Maria" />
+          </div>
 
-        {error && <p style={{ color: "var(--primary)", fontSize: 13 }}>{error}</p>}
+          <div className="fieldGroup">
+            <label className="fieldLabel">Descrição do negócio</label>
+            <textarea className="fieldInput" style={{ minHeight: 70 }} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="O que vende a sua loja?" />
+          </div>
 
-        <button type="submit" className="addToCartButton" disabled={loading} style={{ marginTop: 8 }}>
-          {loading ? "A criar loja..." : "Criar a minha loja"}
-        </button>
-      </form>
+          <div className="fieldGroup">
+            <label className="fieldLabel">Número de WhatsApp</label>
+            <input className="fieldInput" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="258866452412" />
+          </div>
+
+          <div className="fieldGroup">
+            <label className="fieldLabel">O seu e-mail</label>
+            <input className="fieldInput" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="o.seu@email.com" />
+          </div>
+
+          <div className="fieldGroup">
+            <label className="fieldLabel">Crie uma senha</label>
+            <input className="fieldInput" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+          </div>
+
+          {error && <p style={{ color: "var(--primary)", fontSize: 13, marginBottom: 12 }}>{error}</p>}
+
+          <button type="submit" className="primaryButton" disabled={loading}>
+            {loading ? "A criar loja..." : "Criar a minha loja"}
+          </button>
+        </form>
+
+        <p className="authFooterLink">
+          Já tem loja? <a href="/entrar">Entrar</a>
+        </p>
+      </div>
     </div>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  padding: 12,
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--surface-alt)",
-  color: "var(--text)",
-  fontSize: 14,
-  fontFamily: "inherit",
-};
