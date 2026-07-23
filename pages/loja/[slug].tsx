@@ -137,19 +137,6 @@ export default function StorePage({ store, products }: { store: Store | null; pr
     window.open(`https://wa.me/${store.whatsapp_number}?text=${message}`, "_blank");
   }
 
-  function buyNowOnWhatsApp(product: Product) {
-    if (!store) return;
-    if (!store.whatsapp_number) {
-      alert("Esta loja ainda não configurou um número de WhatsApp para receber pedidos.");
-      return;
-    }
-    const price = isOnPromo(product) ? product.promo_price! : product.price;
-    const message =
-      `Olá! Tenho interesse neste produto da loja *${store.name}*:%0A%0A` +
-      encodeURIComponent(`${product.name} — ${price.toFixed(2)} MT`);
-    window.open(`https://wa.me/${store.whatsapp_number}?text=${message}`, "_blank");
-  }
-
   if (!store) {
     return <div className="emptyState">Loja não encontrada.</div>;
   }
@@ -160,21 +147,21 @@ export default function StorePage({ store, products }: { store: Store | null; pr
         {store.logo_url && (
           <img
             src={store.logo_url}
-            style={{ width: 72, height: 72, borderRadius: 16, objectFit: "cover", margin: "0 auto 10px" }}
+            style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover", margin: "0 auto 8px" }}
           />
         )}
         <h1 className="storeName">{store.name}</h1>
         {store.business_description && <p className="storeAbout">{store.business_description}</p>}
 
         {(store.instagram || store.facebook) && (
-          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 8, fontSize: 13 }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 6, fontSize: 12 }}>
             {store.instagram && <span style={{ color: "var(--text-muted)" }}>Instagram: {store.instagram}</span>}
             {store.facebook && <span style={{ color: "var(--text-muted)" }}>Facebook: {store.facebook}</span>}
           </div>
         )}
 
         {(store.business_hours || store.delivery_info || store.payment_methods) && (
-          <div style={{ marginTop: 14, fontSize: 12, color: "var(--text-muted)", textAlign: "left", background: "var(--surface)", borderRadius: 10, padding: 12 }}>
+          <div style={{ marginTop: 12, fontSize: 11, color: "var(--text-muted)", textAlign: "left", background: "var(--surface-alt)", borderRadius: 10, padding: 10 }}>
             {store.business_hours && <p style={{ margin: "2px 0" }}>Horário: {store.business_hours}</p>}
             {store.delivery_info && <p style={{ margin: "2px 0" }}>Entrega: {store.delivery_info}</p>}
             {store.payment_methods && <p style={{ margin: "2px 0" }}>Pagamento: {store.payment_methods}</p>}
@@ -182,16 +169,14 @@ export default function StorePage({ store, products }: { store: Store | null; pr
         )}
       </div>
 
-      {products.length > 4 && (
-        <div style={{ padding: "12px 16px 0" }}>
-          <input
-            placeholder="Pesquisar produto..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface-alt)", color: "var(--text)" }}
-          />
-        </div>
-      )}
+      <div className="searchBar">
+        <input
+          className="searchInput"
+          placeholder="Pesquisar produto..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
       <div className="categoryRow">
         {categories.map((c) => (
@@ -212,10 +197,10 @@ export default function StorePage({ store, products }: { store: Store | null; pr
           {visibleProducts.map((p) => {
             const onPromo = isOnPromo(p);
             return (
-              <div className="card" key={p.id}>
+              <a className="card" key={p.id} href={`/loja/${store.subdomain}/produto/${p.id}`}>
                 <img
                   className="cardImage"
-                  src={p.images?.[0] || "https://placehold.co/300x300/1A1A1A/E11D2A?text=Foto"}
+                  src={p.images?.[0] || "https://placehold.co/300x300/f0f0f2/999?text=Foto"}
                   alt={p.name}
                 />
                 <div className="cardBody">
@@ -231,18 +216,17 @@ export default function StorePage({ store, products }: { store: Store | null; pr
                     )}
                   </div>
                   {onPromo && <span className="badge">PROMOÇÃO</span>}
-                  <button className="addToCartButton" onClick={() => addToCart(p)}>
-                    Adicionar
-                  </button>
                   <button
                     className="addToCartButton"
-                    style={{ background: "transparent", border: "1px solid var(--primary)", marginTop: 6 }}
-                    onClick={() => buyNowOnWhatsApp(p)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addToCart(p);
+                    }}
                   >
-                    Comprar
+                    Adicionar
                   </button>
                 </div>
-              </div>
+              </a>
             );
           })}
         </div>
@@ -258,7 +242,7 @@ export default function StorePage({ store, products }: { store: Store | null; pr
       )}
 
       {showCart && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "flex-end", zIndex: 10 }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", zIndex: 10 }}>
           <div style={{ background: "var(--surface)", width: "100%", maxHeight: "80vh", overflowY: "auto", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20 }}>
             <h2 style={{ margin: 0 }}>O seu carrinho</h2>
             {cart.map((i) => (
