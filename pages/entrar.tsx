@@ -30,48 +30,46 @@ export default function Entrar() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 60 }}>
-      <h1 className="storeName" style={{ textAlign: "center" }}>Entrar</h1>
-      <p className="storeAbout" style={{ textAlign: "center", marginBottom: 24 }}>
-        Aceda ao painel da sua loja
-      </p>
+    <div className="authPage">
+      <div className="authCard">
+        <span className="authBadge">Painel do lojista</span>
+        <h1 className="authTitle">Bem-vindo de volta</h1>
+        <p className="authSubtitle">Entre para gerir a sua loja, produtos e pedidos.</p>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <input
-          placeholder="O seu e-mail"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          placeholder="Senha"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={inputStyle}
-        />
+        <form onSubmit={handleSubmit}>
+          <div className="fieldGroup">
+            <label className="fieldLabel">E-mail</label>
+            <input
+              className="fieldInput"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="o.seu@email.com"
+            />
+          </div>
 
-        {error && <p style={{ color: "var(--primary)", fontSize: 13 }}>{error}</p>}
+          <div className="fieldGroup">
+            <label className="fieldLabel">Senha</label>
+            <input
+              className="fieldInput"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+            />
+          </div>
 
-        <button type="submit" className="addToCartButton" disabled={loading} style={{ marginTop: 8 }}>
-          {loading ? "A entrar..." : "Entrar"}
-        </button>
-      </form>
+          {error && <p style={{ color: "var(--primary)", fontSize: 13, marginBottom: 12 }}>{error}</p>}
 
-      <p style={{ textAlign: "center", marginTop: 20, fontSize: 13 }}>
-        <a href="/criar-loja" style={{ color: "var(--primary)" }}>Ainda não tem loja? Criar agora</a>
-      </p>
+          <button type="submit" className="primaryButton" disabled={loading}>
+            {loading ? "A entrar..." : "Entrar"}
+          </button>
+        </form>
+
+        <p className="authFooterLink">
+          Ainda não tem loja? <a href="/criar-loja">Criar agora</a>
+        </p>
+      </div>
     </div>
   );
-}
-
-const inputStyle: React.CSSProperties = {
-  padding: 12,
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--surface-alt)",
-  color: "var(--text)",
-  fontSize: 14,
-  fontFamily: "inherit",
-};
+    }
