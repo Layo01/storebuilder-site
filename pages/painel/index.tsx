@@ -84,71 +84,73 @@ export default function Painel() {
   if (!store) return null;
 
   return (
-    <div className="container" style={{ paddingTop: 40 }}>
-      <h1 className="storeName" style={{ textAlign: "center" }}>{store.name}</h1>
-      <p className="storeAbout" style={{ textAlign: "center", marginBottom: 20 }}>
-        Painel de gestão da sua loja
-      </p>
-
-      <div style={{ background: "var(--surface)", border: "2px solid var(--primary)", borderRadius: 14, padding: 16, marginBottom: 20 }}>
-        <p style={{ fontWeight: 700, margin: "0 0 4px", fontSize: 14 }}>Link da sua loja</p>
-        <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 12px", wordBreak: "break-all" }}>
-          {getStoreLink()}
-        </p>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={copyLink} className="addToCartButton" style={{ flex: 1, margin: 0 }}>
-            {copied ? "Copiado!" : "Copiar link"}
-          </button>
-          <button
-            onClick={shareOnWhatsApp}
-            style={{ flex: 1, background: "#25D366", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-          >
-            Partilhar
-          </button>
-        </div>
+    <div style={{ paddingBottom: 30 }}>
+      <div className="dashboardHeader">
+        <p className="dashboardGreeting">Painel de gestão</p>
+        <h1 className="dashboardStoreName">{store.name}</h1>
       </div>
 
-      <a href={`/loja/${store.subdomain}`} target="_blank" rel="noreferrer" style={linkCardStyle}>
-        <strong>Ver a minha loja online</strong>
-      </a>
+      <div className="container" style={{ paddingTop: 20 }}>
+        <div style={{ background: "var(--surface)", border: "2px solid var(--primary)", borderRadius: 16, padding: 18, marginBottom: 20, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+          <p style={{ fontWeight: 700, margin: "0 0 4px", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.03em", color: "var(--primary)" }}>
+            Link da sua loja
+          </p>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 14px", wordBreak: "break-all" }}>
+            {getStoreLink()}
+          </p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={copyLink} className="primaryButton" style={{ flex: 1 }}>
+              {copied ? "Copiado!" : "Copiar link"}
+            </button>
+            <button
+              onClick={shareOnWhatsApp}
+              style={{ flex: 1, background: "#25D366", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+            >
+              Partilhar
+            </button>
+          </div>
+        </div>
 
-      <a href="/painel/produtos" style={linkCardStyle}>
-        <strong>Produtos</strong>
-        <p style={{ color: "var(--text-muted)", fontSize: 13, margin: "4px 0 0" }}>
-          {productCount} produto(s) cadastrado(s)
-        </p>
-      </a>
+        <a href={`/loja/${store.subdomain}`} target="_blank" rel="noreferrer" className="linkCard">
+          <div className="linkCardIcon">👀</div>
+          <div>
+            <p className="linkCardTitle">Ver a minha loja online</p>
+          </div>
+        </a>
 
-      <a href="/painel/cupons" style={linkCardStyle}>
-        <strong>Cupões de desconto</strong>
-        <p style={{ color: "var(--text-muted)", fontSize: 13, margin: "4px 0 0" }}>
-          Criar e gerir promoções
-        </p>
-      </a>
+        <a href="/painel/produtos" className="linkCard">
+          <div className="linkCardIcon">📦</div>
+          <div>
+            <p className="linkCardTitle">Produtos</p>
+            <p className="linkCardSubtitle">{productCount} produto(s) cadastrado(s)</p>
+          </div>
+        </a>
 
-      <a href="/painel/loja" style={linkCardStyle}>
-        <strong>Dados da loja</strong>
-        <p style={{ color: "var(--text-muted)", fontSize: 13, margin: "4px 0 0" }}>
-          Logo, descrição, WhatsApp, redes sociais, entrega
-        </p>
-      </a>
+        <a href="/painel/cupons" className="linkCard">
+          <div className="linkCardIcon">🎟️</div>
+          <div>
+            <p className="linkCardTitle">Cupões de desconto</p>
+            <p className="linkCardSubtitle">Criar e gerir promoções</p>
+          </div>
+        </a>
 
-      <button
-        onClick={handleLogout}
-        style={{ ...linkCardStyle, width: "100%", textAlign: "left", cursor: "pointer", marginTop: 20, color: "var(--text-muted)" }}
-      >
-        Sair da conta
-      </button>
+        <a href="/painel/loja" className="linkCard">
+          <div className="linkCardIcon">🏪</div>
+          <div>
+            <p className="linkCardTitle">Dados da loja</p>
+            <p className="linkCardSubtitle">Logo, descrição, WhatsApp, redes sociais</p>
+          </div>
+        </a>
+
+        <button
+          onClick={handleLogout}
+          className="linkCard"
+          style={{ width: "100%", textAlign: "left", cursor: "pointer", marginTop: 16, border: "none" }}
+        >
+          <div className="linkCardIcon">🚪</div>
+          <p className="linkCardTitle" style={{ color: "var(--text-muted)" }}>Sair da conta</p>
+        </button>
+      </div>
     </div>
   );
 }
-
-const linkCardStyle: React.CSSProperties = {
-  display: "block",
-  background: "var(--surface)",
-  border: "1px solid var(--border)",
-  borderRadius: 12,
-  padding: 16,
-  marginBottom: 12,
-  color: "var(--text)",
-};
