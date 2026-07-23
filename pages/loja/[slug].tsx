@@ -21,6 +21,12 @@ interface Store {
   business_description: string;
   subdomain: string;
   whatsapp_number: string | null;
+  logo_url: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  business_hours: string | null;
+  delivery_info: string | null;
+  payment_methods: string | null;
 }
 
 interface CartItem {
@@ -35,6 +41,7 @@ export default function StorePage({ store, products }: { store: Store | null; pr
   const [couponCode, setCouponCode] = useState("");
   const [couponMessage, setCouponMessage] = useState("");
   const [appliedDiscountPct, setAppliedDiscountPct] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const categories = useMemo(() => {
     const set = new Set(products.map((p) => p.category || "Geral"));
@@ -42,9 +49,16 @@ export default function StorePage({ store, products }: { store: Store | null; pr
   }, [products]);
 
   const visibleProducts = useMemo(() => {
-    if (activeCategory === "Todos") return products;
-    return products.filter((p) => p.category === activeCategory);
-  }, [products, activeCategory]);
+    let list = products;
+    if (activeCategory !== "Todos") {
+      list = list.filter((p) => p.category === activeCategory);
+    }
+    if (searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      list = list.filter((p) => p.name.toLowerCase().includes(term));
+    }
+    return list;
+  }, [products, activeCategory, searchTerm]);
 
   function isOnPromo(p: Product) {
     if (!p.promo_price) return false;
@@ -143,9 +157,41 @@ export default function StorePage({ store, products }: { store: Store | null; pr
   return (
     <div>
       <div className="header">
+        {store.logo_url && (
+          <img
+            src={store.logo_url}
+            style={{ width: 72, height: 72, borderRadius: 16, objectFit: "cover", margin: "0 auto 10px" }}
+          />
+        )}
         <h1 className="storeName">{store.name}</h1>
         {store.business_description && <p className="storeAbout">{store.business_description}</p>}
+
+        {(store.instagram || store.facebook) && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 8, fontSize: 13 }}>
+            {store.instagram && <span style={{ color: "var(--text-muted)" }}>📷 {store.instagram}</span>}
+            {store.facebook && <span style={{ color: "var(--text-muted)" }}>👍 {store.facebook}</span>}
+          </div>
+        )}
+
+        {(store.business_hours || store.delivery_info || store.payment_methods) && (
+          <div style={{ marginTop: 14, fontSize: 12, color: "var(--text-muted)", textAlign: "left", background: "var(--surface)", borderRadius: 10, padding: 12 }}>
+            {store.business_hours && <p style={{ margin: "2px 0" }}>🕐 {store.business_hours}</p>}
+            {store.delivery_info && <p style={{ margin: "2px 0" }}>🚚 {store.delivery_info}</p>}
+            {store.payment_methods && <p style={{ margin: "2px 0" }}>💳 {store.payment_methods}</p>}
+          </div>
+        )}
       </div>
+
+      {products.length > 4 && (
+        <div style={{ padding: "12px 16px 0" }}>
+          <input
+            placeholder="Pesquisar produto..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface-alt)", color: "var(--text)" }}
+          />
+        </div>
+      )}
 
       <div className="categoryRow">
         {categories.map((c) => (
@@ -160,7 +206,7 @@ export default function StorePage({ store, products }: { store: Store | null; pr
       </div>
 
       {visibleProducts.length === 0 ? (
-        <div className="emptyState">Ainda não há produtos disponíveis nesta categoria.</div>
+        <div className="emptyState">Nenhum produto encontrado.</div>
       ) : (
         <div className="grid">
           {visibleProducts.map((p) => {
@@ -265,20 +311,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const { data: store } = await supabase
     .from("stores")
-    .select("id, name, business_description, subdomain, whatsapp_number")
-    .eq("subdomain", slug)
-    .maybeSingle();
-
-  if (!store) {
-    return { props: { store: null, products: [] } };
-  }
-
-  const { data: products } = await supabase
-    .from("products")
-    .select("id, name, description, category, images, price, promo_price, promo_starts_at, promo_ends_at, is_available")
-    .eq("store_id", store.id)
-    .eq("is_available", true)
-    .order("updated_at", { ascending: false });
-
-  return { props: { store, products: products || [] } };
-};
+    .select("id, name, business_description, subdomain, whatsapp_number, logo_url, instagram, facebook, business_hours, delivery_info, payment_method
