@@ -117,3 +117,222 @@ export default function StorePage({ store, products }: { store: Store | null; pr
     if (data.discount_type === "percent") {
       setAppliedDiscountPct(data.discount_value);
       setCouponMessage(`Cupão aplicado: ${data.discount_value}% de desconto`);
+    } else if (data.discount_type === "fixed") {
+      setAppliedDiscountPct(0);
+      setCouponMessage(`Cupão de ${data.discount_value} MT será aplicado na confirmação`);
+    } else {
+      setCouponMessage("Cupão de frete grátis aplicado — confirme no WhatsApp");
+    }
+  }
+
+  function checkoutOnWhatsApp() {
+    if (!store) return;
+    if (!store.whatsapp_number) {
+      alert("Esta loja ainda não configurou um número de WhatsApp para receber pedidos.");
+      return;
+    }
+    const lines = cart.map((i) => {
+      const price = isOnPromo(i.product) ? i.product.promo_price! : i.product.price;
+      return `${i.qty}x ${i.product.name} — ${(price * i.qty).toFixed(2)} MT`;
+    });
+    const message =
+      `Olá! Quero encomendar na loja *${store.name}*:%0A%0A` +
+      encodeURIComponent(lines.join("\n")) +
+      `%0A%0ATotal: ${total.toFixed(2)} MT` +
+      (couponCode ? `%0ACupão: ${couponCode.toUpperCase()}` : "");
+    window.open(`https://wa.me/${store.whatsapp_number}?text=${message}`, "_blank");
+  }
+
+  function buyNowOnWhatsApp(product: Product) {
+    if (!store) return;
+    if (!store.whatsapp_number) {
+      alert("Esta loja ainda não configurou um número de WhatsApp para receber pedidos.");
+      return;
+    }
+    const price = isOnPromo(product) ? product.promo_price! : product.price;
+    const message = encodeURIComponent(
+      `Olá! Tenho interesse neste produto da loja *${store.name}*:\n\n${product.name} — ${price.toFixed(2)} MT`
+    );
+    window.open(`https://wa.me/${store.whatsapp_number}?text=${message}`, "_blank");
+  }
+
+  if (!store) {
+    return <div className="emptyState">Loja não encontrada.</div>;
+  }
+
+  return (
+    <div>
+      <div className="header">
+        {store.logo_url && (
+          <img
+            src={store.logo_url}
+            style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover", margin: "0 auto 8px" }}
+          />
+        )}
+        <h1 className="storeName">{store.name}</h1>
+        {store.business_description && <p className="storeAbout">{store.business_description}</p>}
+
+        {(store.instagram || store.facebook) && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 6, fontSize: 12 }}>
+            {store.instagram && <span style={{ color: "var(--text-muted)" }}>Instagram: {store.instagram}</span>}
+            {store.facebook && <span style={{ color: "var(--text-muted)" }}>Facebook: {store.facebook}</span>}
+          </div>
+        )}
+
+        {(store.business_hours || store.delivery_info || store.payment_methods) && (
+          <div style={{ marginTop: 12, fontSize: 11, color: "var(--text-muted)", textAlign: "left", background: "var(--surface-alt)", borderRadius: 10, padding: 10 }}>
+            {store.business_hours && <p style={{ margin: "2px 0" }}>Horário: {store.business_hours}</p>}
+            {store.delivery_info && <p style={{ margin: "2px 0" }}>Entrega: {store.delivery_info}</p>}
+            {store.payment_methods && <p style={{ margin: "2px 0" }}>Pagamento: {store.payment_methods}</p>}
+          </div>
+        )}
+      </div>
+
+      <div className="searchBar">
+        <input
+          className="searchInput"
+          placeholder="Pesquisar produto..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      <div className="categoryRow">
+        {categories.map((c) => (
+          <div
+            key={c}
+            className={`categoryChip ${activeCategory === c ? "active" : ""}`}
+            onClick={() => setActiveCategory(c)}
+          >
+            {c}
+          </div>
+        ))}
+      </div>
+
+      {visibleProducts.length === 0 ? (
+        <div className="emptyState">Nenhum produto encontrado.</div>
+      ) : (
+        <div className="grid">
+          {visibleProducts.map((p) => {
+            const onPromo = isOnPromo(p);
+            return (
+              <div className="card" key={p.id}>
+                <a href={`/loja/${store.subdomain}/produto/${p.id}`}>
+                  <img
+                    className="cardImage"
+                    src={p.images?.[0] || "https://placehold.co/300x300/f0f0f2/999?text=Foto"}
+                    alt={p.name}
+                  />
+                </a>
+                <div className="cardBody">
+                  <a href={`/loja/${store.subdomain}/produto/${p.id}`}>
+                    <p className="cardName">{p.name}</p>
+                  </a>
+                  <div className="priceRow">
+                    {onPromo ? (
+                      <>
+                        <span className="priceOld">{p.price.toFixed(2)} MT</span>
+                        <span className="pricePromo">{p.promo_price!.toFixed(2)} MT</span>
+                      </>
+                    ) : (
+                      <span className="price">{p.price.toFixed(2)} MT</span>
+                    )}
+                  </div>
+                  {onPromo && <span className="badge">PROMOÇÃO</span>}
+                  <button className="addToCartButton" onClick={() => addToCart(p)}>
+                    Adicionar
+                  </button>
+                  <button
+                    className="addToCartButton"
+                    style={{ background: "transparent", border: "1px solid var(--primary)", color: "var(--primary)", marginTop: 6 }}
+                    onClick={() => buyNowOnWhatsApp(p)}
+                  >
+                    Comprar
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="footer">SUBSCREVE PARA MAIS CONTEÚDOS · {store.name}</div>
+
+      {cart.length > 0 && !showCart && (
+        <div className="cartBar" onClick={() => setShowCart(true)}>
+          <span>{cart.reduce((n, i) => n + i.qty, 0)} item(ns)</span>
+          <span>{total.toFixed(2)} MT · Ver carrinho</span>
+        </div>
+      )}
+
+      {showCart && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", zIndex: 10 }}>
+          <div style={{ background: "var(--surface)", width: "100%", maxHeight: "80vh", overflowY: "auto", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20 }}>
+            <h2 style={{ margin: 0 }}>O seu carrinho</h2>
+            {cart.map((i) => (
+              <div key={i.product.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
+                <span style={{ fontSize: 14 }}>{i.product.name}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <button onClick={() => changeQty(i.product.id, -1)} style={qtyBtnStyle}>-</button>
+                  <span>{i.qty}</span>
+                  <button onClick={() => changeQty(i.product.id, 1)} style={qtyBtnStyle}>+</button>
+                </div>
+              </div>
+            ))}
+
+            <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+              <input
+                placeholder="Código de cupão"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface-alt)", color: "var(--text)" }}
+              />
+              <button onClick={applyCoupon} style={{ ...qtyBtnStyle, width: "auto", padding: "0 14px" }}>Aplicar</button>
+            </div>
+            {couponMessage && <p style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 6 }}>{couponMessage}</p>}
+
+            <p style={{ fontWeight: 800, fontSize: 18, marginTop: 20 }}>Total: {total.toFixed(2)} MT</p>
+
+            <button className="addToCartButton" style={{ marginTop: 8 }} onClick={checkoutOnWhatsApp}>
+              Finalizar pedido no WhatsApp
+            </button>
+            <button
+              onClick={() => setShowCart(false)}
+              style={{ width: "100%", background: "transparent", color: "var(--text-muted)", border: "none", marginTop: 10, padding: 8 }}
+            >
+              Continuar a comprar
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const qtyBtnStyle: React.CSSProperties = {
+  width: 28, height: 28, borderRadius: 6, border: "1px solid var(--border)",
+  background: "var(--surface-alt)", color: "var(--text)", cursor: "pointer",
+};
+
+export const getServerSideProps: GetServerSideProps<{ store: Store | null; products: Product[] }> = async (context) => {
+  const slug = context.params?.slug as string;
+
+  const { data: store } = await supabase
+    .from("stores")
+    .select("id, name, business_description, subdomain, whatsapp_number, logo_url, instagram, facebook, business_hours, delivery_info, payment_methods")
+    .eq("subdomain", slug)
+    .maybeSingle();
+
+  if (!store) {
+    return { props: { store: null, products: [] } };
+  }
+
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, name, description, category, images, price, promo_price, promo_starts_at, promo_ends_at, is_available")
+    .eq("store_id", store.id)
+    .eq("is_available", true)
+    .order("updated_at", { ascending: false });
+
+  return { props: { store, products: products || [] } };
+};
