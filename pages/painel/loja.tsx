@@ -15,6 +15,9 @@ export default function DadosLoja() {
   const [whatsapp, setWhatsapp] = useState("");
   const [instagram, setInstagram] = useState("");
   const [facebook, setFacebook] = useState("");
+  const [tiktok, setTiktok] = useState("");
+  const [youtube, setYoutube] = useState("");
+  const [telegram, setTelegram] = useState("");
   const [businessHours, setBusinessHours] = useState("");
   const [deliveryInfo, setDeliveryInfo] = useState("");
   const [paymentMethods, setPaymentMethods] = useState("");
@@ -48,6 +51,9 @@ export default function DadosLoja() {
     setWhatsapp(store.whatsapp_number || "");
     setInstagram(store.instagram || "");
     setFacebook(store.facebook || "");
+    setTiktok(store.tiktok || "");
+    setYoutube(store.youtube || "");
+    setTelegram(store.telegram || "");
     setBusinessHours(store.business_hours || "");
     setDeliveryInfo(store.delivery_info || "");
     setPaymentMethods(store.payment_methods || "");
@@ -97,6 +103,9 @@ export default function DadosLoja() {
         whatsapp_number: whatsapp.trim(),
         instagram: instagram.trim(),
         facebook: facebook.trim(),
+        tiktok: tiktok.trim(),
+        youtube: youtube.trim(),
+        telegram: telegram.trim(),
         business_hours: businessHours.trim(),
         delivery_info: deliveryInfo.trim(),
         payment_methods: paymentMethods.trim(),
@@ -121,60 +130,77 @@ export default function DadosLoja() {
       <a href="/painel" style={{ color: "var(--text-muted)", fontSize: 13 }}>← Voltar ao painel</a>
       <h1 className="storeName" style={{ marginTop: 10 }}>Dados da loja</h1>
 
-      <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
-        <label style={labelStyle}>Logo da loja</label>
-        {existingLogoUrl && !logoFile && (
-          <img src={existingLogoUrl} style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover" }} />
-        )}
-        <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files?.[0] || null)} />
+      <form onSubmit={handleSave} style={{ marginTop: 16 }}>
+        <div className="fieldGroup">
+          <label className="fieldLabel">Logo da loja</label>
+          {existingLogoUrl && !logoFile && (
+            <img src={existingLogoUrl} style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", marginBottom: 8, display: "block" }} />
+          )}
+          <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files?.[0] || null)} />
+        </div>
 
-        <label style={labelStyle}>Nome da loja</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+        <div className="fieldGroup">
+          <label className="fieldLabel">Nome da loja</label>
+          <input className="fieldInput" value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
 
-        <label style={labelStyle}>Descrição do negócio</label>
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} style={{ ...inputStyle, minHeight: 70 }} />
+        <div className="fieldGroup">
+          <label className="fieldLabel">Descrição do negócio</label>
+          <textarea className="fieldInput" style={{ minHeight: 70 }} value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
 
-        <label style={labelStyle}>Número de WhatsApp</label>
-        <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} style={inputStyle} placeholder="258866452412" />
+        <div className="fieldGroup">
+          <label className="fieldLabel">Número de WhatsApp</label>
+          <input className="fieldInput" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="258866452412" />
+        </div>
 
-        <label style={labelStyle}>Instagram (opcional)</label>
-        <input value={instagram} onChange={(e) => setInstagram(e.target.value)} style={inputStyle} placeholder="@minhaloja" />
+        <div className="fieldGroup">
+          <label className="fieldLabel">Instagram</label>
+          <input className="fieldInput" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@minhaloja ou link" />
+        </div>
 
-        <label style={labelStyle}>Facebook (opcional)</label>
-        <input value={facebook} onChange={(e) => setFacebook(e.target.value)} style={inputStyle} placeholder="facebook.com/minhaloja" />
+        <div className="fieldGroup">
+          <label className="fieldLabel">Facebook</label>
+          <input className="fieldInput" value={facebook} onChange={(e) => setFacebook(e.target.value)} placeholder="facebook.com/minhaloja" />
+        </div>
 
-        <label style={labelStyle}>Horário de funcionamento</label>
-        <input value={businessHours} onChange={(e) => setBusinessHours(e.target.value)} style={inputStyle} placeholder="Seg-Sex 8h-18h, Sáb 8h-13h" />
+        <div className="fieldGroup">
+          <label className="fieldLabel">TikTok</label>
+          <input className="fieldInput" value={tiktok} onChange={(e) => setTiktok(e.target.value)} placeholder="@minhaloja ou link" />
+        </div>
 
-        <label style={labelStyle}>Informação de entrega</label>
-        <input value={deliveryInfo} onChange={(e) => setDeliveryInfo(e.target.value)} style={inputStyle} placeholder="Entregamos em Maputo, taxa de 100 MT" />
+        <div className="fieldGroup">
+          <label className="fieldLabel">YouTube</label>
+          <input className="fieldInput" value={youtube} onChange={(e) => setYoutube(e.target.value)} placeholder="Link do canal" />
+        </div>
 
-        <label style={labelStyle}>Métodos de pagamento aceites</label>
-        <input value={paymentMethods} onChange={(e) => setPaymentMethods(e.target.value)} style={inputStyle} placeholder="M-Pesa, e-Mola, Dinheiro" />
+        <div className="fieldGroup">
+          <label className="fieldLabel">Telegram</label>
+          <input className="fieldInput" value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="Link do canal ou @usuario" />
+        </div>
 
-        {error && <p style={{ color: "var(--primary)", fontSize: 13 }}>{error}</p>}
-        {success && <p style={{ color: "#4ade80", fontSize: 13 }}>Dados guardados com sucesso!</p>}
+        <div className="fieldGroup">
+          <label className="fieldLabel">Horário de funcionamento</label>
+          <input className="fieldInput" value={businessHours} onChange={(e) => setBusinessHours(e.target.value)} placeholder="Seg-Sex 8h-18h, Sáb 8h-13h" />
+        </div>
 
-        <button type="submit" className="addToCartButton" disabled={saving} style={{ marginTop: 8 }}>
+        <div className="fieldGroup">
+          <label className="fieldLabel">Informação de entrega</label>
+          <input className="fieldInput" value={deliveryInfo} onChange={(e) => setDeliveryInfo(e.target.value)} placeholder="Entregamos em Maputo, taxa de 100 MT" />
+        </div>
+
+        <div className="fieldGroup">
+          <label className="fieldLabel">Métodos de pagamento aceites</label>
+          <input className="fieldInput" value={paymentMethods} onChange={(e) => setPaymentMethods(e.target.value)} placeholder="M-Pesa, e-Mola, Dinheiro" />
+        </div>
+
+        {error && <p style={{ color: "var(--primary)", fontSize: 13, marginBottom: 12 }}>{error}</p>}
+        {success && <p style={{ color: "#16a34a", fontSize: 13, marginBottom: 12, fontWeight: 700 }}>Dados guardados com sucesso!</p>}
+
+        <button type="submit" className="primaryButton" disabled={saving}>
           {saving ? "A guardar..." : "Guardar alterações"}
         </button>
       </form>
     </div>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  padding: 12,
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--surface-alt)",
-  color: "var(--text)",
-  fontSize: 14,
-  fontFamily: "inherit",
-};
-
-const labelStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--text-muted)",
-  marginTop: 4,
-};
