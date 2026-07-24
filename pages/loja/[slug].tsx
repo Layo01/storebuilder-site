@@ -24,6 +24,9 @@ interface Store {
   logo_url: string | null;
   instagram: string | null;
   facebook: string | null;
+  tiktok: string | null;
+  youtube: string | null;
+  telegram: string | null;
   business_hours: string | null;
   delivery_info: string | null;
   payment_methods: string | null;
@@ -32,6 +35,15 @@ interface Store {
 interface CartItem {
   product: Product;
   qty: number;
+}
+
+function socialLink(value: string, kind: "instagram" | "facebook" | "tiktok" | "youtube" | "telegram") {
+  if (value.startsWith("http")) return value;
+  const handle = value.replace("@", "");
+  if (kind === "instagram") return `https://instagram.com/${handle}`;
+  if (kind === "tiktok") return `https://tiktok.com/@${handle}`;
+  if (kind === "telegram") return `https://t.me/${handle}`;
+  return value;
 }
 
 export default function StorePage({ store, products }: { store: Store | null; products: Product[] }) {
@@ -160,30 +172,41 @@ export default function StorePage({ store, products }: { store: Store | null; pr
     return <div className="emptyState">Loja não encontrada.</div>;
   }
 
+  const socials = [
+    store.instagram && { label: "Instagram", url: socialLink(store.instagram, "instagram") },
+    store.facebook && { label: "Facebook", url: socialLink(store.facebook, "facebook") },
+    store.tiktok && { label: "TikTok", url: socialLink(store.tiktok, "tiktok") },
+    store.youtube && { label: "YouTube", url: socialLink(store.youtube, "youtube") },
+    store.telegram && { label: "Telegram", url: socialLink(store.telegram, "telegram") },
+  ].filter(Boolean) as { label: string; url: string }[];
+
   return (
     <div>
       <div className="header">
         {store.logo_url && (
           <img
             src={store.logo_url}
-            style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover", margin: "0 auto 8px" }}
+            style={{ width: 68, height: 68, borderRadius: 18, objectFit: "cover", margin: "0 auto 10px" }}
           />
         )}
         <h1 className="storeName">{store.name}</h1>
         {store.business_description && <p className="storeAbout">{store.business_description}</p>}
 
-        {(store.instagram || store.facebook) && (
-          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 6, fontSize: 12 }}>
-            {store.instagram && <span style={{ color: "var(--text-muted)" }}>Instagram: {store.instagram}</span>}
-            {store.facebook && <span style={{ color: "var(--text-muted)" }}>Facebook: {store.facebook}</span>}
+        {socials.length > 0 && (
+          <div className="storeSocialRow">
+            {socials.map((s) => (
+              <a key={s.label} href={s.url} target="_blank" rel="noreferrer" className="storeSocialPill">
+                {s.label}
+              </a>
+            ))}
           </div>
         )}
 
         {(store.business_hours || store.delivery_info || store.payment_methods) && (
-          <div style={{ marginTop: 12, fontSize: 11, color: "var(--text-muted)", textAlign: "left", background: "var(--surface-alt)", borderRadius: 10, padding: 10 }}>
-            {store.business_hours && <p style={{ margin: "2px 0" }}>Horário: {store.business_hours}</p>}
-            {store.delivery_info && <p style={{ margin: "2px 0" }}>Entrega: {store.delivery_info}</p>}
-            {store.payment_methods && <p style={{ margin: "2px 0" }}>Pagamento: {store.payment_methods}</p>}
+          <div className="storeInfoBox">
+            {store.business_hours && <p style={{ margin: "2px 0" }}><strong>Horário:</strong> {store.business_hours}</p>}
+            {store.delivery_info && <p style={{ margin: "2px 0" }}><strong>Entrega:</strong> {store.delivery_info}</p>}
+            {store.payment_methods && <p style={{ margin: "2px 0" }}><strong>Pagamento:</strong> {store.payment_methods}</p>}
           </div>
         )}
       </div>
@@ -319,7 +342,7 @@ export const getServerSideProps: GetServerSideProps<{ store: Store | null; produ
 
   const { data: store } = await supabase
     .from("stores")
-    .select("id, name, business_description, subdomain, whatsapp_number, logo_url, instagram, facebook, business_hours, delivery_info, payment_methods")
+    .select("id, name, business_description, subdomain, whatsapp_number, logo_url, instagram, facebook, tiktok, youtube, telegram, business_hours, delivery_info, payment_methods")
     .eq("subdomain", slug)
     .maybeSingle();
 
